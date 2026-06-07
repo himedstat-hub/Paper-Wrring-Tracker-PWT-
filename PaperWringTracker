@@ -84,7 +84,14 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>논문 작성 일지</h1>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+    <h1>논문 작성 일지</h1>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm" onclick="backupData()">💾 백업</button>
+      <button class="btn btn-sm" onclick="document.getElementById('restore-input').click()">📂 복원</button>
+      <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(event)">
+    </div>
+  </div>
   <div class="meta" id="meta">로딩 중...</div>
 
   <div class="tabs">
@@ -435,6 +442,37 @@ function deleteProject(id) {
   data.projects = data.projects.filter(p => p.id !== id);
   data.logs = data.logs.filter(l => l.projectId !== id);
   save(); render();
+}
+
+function backupData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `paper-journal-backup-${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed.projects || !parsed.logs) throw new Error();
+      if (!confirm(`백업 파일을 복원할까요?\n프로젝트 ${parsed.projects.length}개, 기록 ${parsed.logs.length}개\n현재 데이터는 덮어씌워집니다.`)) return;
+      data = parsed;
+      save();
+      render();
+      alert("복원 완료!");
+    } catch {
+      alert("올바른 백업 파일이 아닙니다.");
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = "";
 }
 
 function escHtml(s) {
