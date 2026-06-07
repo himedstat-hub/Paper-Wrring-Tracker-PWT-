@@ -61,8 +61,9 @@
   .cal-dow:first-child { color: #e55; }
   .cal-dow:last-child { color: #5599ee; }
   .cal-day {
-    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     border-radius: 8px; font-size: 13px; cursor: pointer; position: relative; transition: background 0.1s;
+    padding: 4px 2px;
   }
   .cal-day:hover { background: #f5f5f3; }
   .cal-day.empty { cursor: default; }
