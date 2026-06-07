@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>논문 작성 일지</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f3; color: #1a1a1a; font-size: 15px; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 2rem 1rem; }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .meta { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.75rem; }
+  .tab { background: none; border: 1px solid transparent; border-radius: 8px; padding: 6px 16px; font-size: 14px; cursor: pointer; color: #666; }
+  .tab.active { background: #efefef; border-color: #ddd; color: #1a1a1a; }
+  .btn { background: none; border: 1px solid #ccc; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #1a1a1a; }
+  .btn:hover { background: #f0f0f0; }
+  .btn-primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .btn-primary:hover { background: #333; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-del { background: none; border: none; cursor: pointer; color: #bbb; font-size: 18px; line-height: 1; padding: 0; }
+  .btn-del:hover { color: #e55; }
+  .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .card { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; padding: 0.875rem 1.125rem; margin-bottom: 8px; }
+  .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .form-box { background: #f9f9f7; border: 1px solid #e8e8e8; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; font-family: inherit; background: #fff; color: #1a1a1a;
+  }
+  .field textarea { resize: vertical; line-height: 1.6; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; }
+  .badge-blue { background: #e8f0fe; color: #1a56db; }
+  .badge-green { background: #e6f4ea; color: #1e7e34; }
+  .badge-amber { background: #fef3cd; color: #856404; }
+  .badge-gray { background: #f0f0f0; color: #666; }
+  .date-label { font-size: 12px; font-weight: 500; color: #888; margin-bottom: 8px; margin-top: 1.25rem; }
+  .date-label:first-child { margin-top: 0; }
+  .proj-title { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+  .proj-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: #888; }
+  .log-badges { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+  .log-content { font-size: 14px; line-height: 1.6; color: #1a1a1a; }
+  .timeline-line { border-left: 2px solid #e0e0e0; padding-left: 16px; position: relative; }
+  .tl-dot { position: absolute; left: -5px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
+  .tl-item { position: relative; margin-bottom: 12px; }
+  .tl-date { font-size: 12px; color: #aaa; margin-bottom: 2px; }
+  .empty { text-align: center; padding: 3rem 0; font-size: 13px; color: #aaa; }
+  .form-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+  /* 달력 */
+  .cal-wrap { background: #fff; border: 1px solid #e8e8e8; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .cal-title { font-size: 15px; font-weight: 500; }
+  .cal-nav { background: none; border: 1px solid #ddd; border-radius: 6px; padding: 3px 10px; font-size: 14px; cursor: pointer; color: #555; }
+  .cal-nav:hover { background: #f0f0f0; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { text-align: center; font-size: 11px; color: #aaa; padding: 4px 0; font-weight: 500; }
+  .cal-dow:first-child { color: #e55; }
+  .cal-dow:last-child { color: #5599ee; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 8px; font-size: 13px; cursor: pointer; position: relative; transition: background 0.1s;
+  }
+  .cal-day:hover { background: #f5f5f3; }
+  .cal-day.empty { cursor: default; }
+  .cal-day.empty:hover { background: none; }
+  .cal-day.today { font-weight: 600; }
+  .cal-day.today .day-num { background: #1a1a1a; color: #fff; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+  .cal-day.has-log .day-num { background: #4f86f7; color: #fff; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+  .cal-day.today.has-log .day-num { background: #1a56db; color: #fff; }
+  .cal-day.selected { background: #eef3ff; }
+  .cal-day .dot-row { display: flex; gap: 2px; margin-top: 2px; }
+  .cal-day .dot { width: 4px; height: 4px; border-radius: 50%; }
+  .cal-day.sun .day-num-plain { color: #e55; }
+  .cal-day.sat .day-num-plain { color: #5599ee; }
+  .cal-day .day-num-plain { font-size: 13px; }
+  .selected-day-logs { margin-bottom: 1rem; }
+  .selected-day-title { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>논문 작성 일지</h1>
+  <div class="meta" id="meta">로딩 중...</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('log')">일지</button>
+    <button class="tab" onclick="switchTab('projects')">프로젝트</button>
+    <button class="tab" onclick="switchTab('timeline')">타임라인</button>
+  </div>
+
+  <div id="tab-log"></div>
+  <div id="tab-projects" style="display:none"></div>
+  <div id="tab-timeline" style="display:none"></div>
+</div>
+
+<script>
+const STORAGE_KEY = "paper_journal";
+let data = load();
+let currentTab = "log";
+let calYear, calMonth, selectedDate = null;
+
+const now = new Date();
+calYear = now.getFullYear();
+calMonth = now.getMonth(); // 0-indexed
+
+const DOW = ["일","월","화","수","목","금","토"];
+const PROJECT_COLORS = ["#4f86f7","#e0704a","#3db87a","#9b6ee8","#e0a020","#e05080","#29b6c8"];
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { projects: [], logs: [] }; }
+  catch { return { projects: [], logs: [] }; }
+}
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); updateMeta(); }
+
+function today() { return new Date().toISOString().slice(0, 10); }
+
+function fmtDate(d) {
+  return new Date(d + "T00:00:00").toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" });
+}
+
+function statusBadge(s) {
+  const map = { "진행중":"blue","투고 준비":"amber","심사 중":"amber","수정 중":"amber","게재 확정":"green","완료":"green" };
+  return `<span class="badge badge-${map[s]||'gray'}">${s}</span>`;
+}
+
+function projColor(projId) {
+  const idx = data.projects.findIndex(p => p.id === projId);
+  return PROJECT_COLORS[idx % PROJECT_COLORS.length] || "#4f86f7";
+}
+
+function updateMeta() {
+  const hrs = data.logs.reduce((s, l) => s + (parseFloat(l.hours) || 0), 0);
+  document.getElementById("meta").textContent =
+    `프로젝트 ${data.projects.length}개 · 기록 ${data.logs.length}개 · 총 ${hrs.toFixed(1)}시간`;
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll(".tab").forEach((t, i) => {
+    t.classList.toggle("active", ["log","projects","timeline"][i] === tab);
+  });
+  ["log","projects","timeline"].forEach(t => {
+    document.getElementById("tab-" + t).style.display = t === tab ? "" : "none";
+  });
+  render();
+}
+
+function render() {
+  if (currentTab === "log") renderLog();
+  if (currentTab === "projects") renderProjects();
+  if (currentTab === "timeline") renderTimeline();
+}
+
+/* ── 달력 ── */
+function renderCalendar() {
+  const logDates = {}; // date -> [projId, ...]
+  for (const l of data.logs) {
+    if (!logDates[l.date]) logDates[l.date] = [];
+    if (!logDates[l.date].includes(l.projectId)) logDates[l.date].push(l.projectId);
+  }
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const todayStr = today();
+  const monthLabel = new Date(calYear, calMonth, 1).toLocaleDateString("ko-KR", { year: "numeric", month: "long" });
+
+  let html = `<div class="cal-wrap">
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calMove(-1)">&#8249;</button>
+      <span class="cal-title">${monthLabel}</span>
+      <button class="cal-nav" onclick="calMove(1)">&#8250;</button>
+    </div>
+    <div class="cal-grid">`;
+
+  for (const d of DOW) html += `<div class="cal-dow">${d}</div>`;
+
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const dow = new Date(dateStr + "T00:00:00").getDay();
+    const hasLog = !!logDates[dateStr];
+    const isToday = dateStr === todayStr;
+    const isSel = dateStr === selectedDate;
+    const isSun = dow === 0, isSat = dow === 6;
+
+    const classes = ["cal-day",
+      hasLog ? "has-log" : "",
+      isToday ? "today" : "",
+      isSel ? "selected" : "",
+      isSun ? "sun" : "",
+      isSat ? "sat" : ""
+    ].filter(Boolean).join(" ");
+
+    let numHtml;
+    if (hasLog || isToday) {
+      numHtml = `<span class="day-num">${d}</span>`;
+    } else {
+      numHtml = `<span class="day-num-plain">${d}</span>`;
+    }
+
+    let dots = "";
+    if (hasLog) {
+      dots = `<div class="dot-row">` +
+        logDates[dateStr].slice(0, 4).map(pid => `<div class="dot" style="background:${projColor(pid)}"></div>`).join("") +
+        `</div>`;
+    }
+
+    html += `<div class="${classes}" onclick="selectDate('${dateStr}')">${numHtml}${dots}</div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function calMove(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  render();
+}
+
+function selectDate(dateStr) {
+  selectedDate = selectedDate === dateStr ? null : dateStr;
+  render();
+}
+
+/* ── 일지 탭 ── */
+function renderLog() {
+  const el = document.getElementById("tab-log");
+  const projMap = Object.fromEntries(data.projects.map(p => [p.id, p]));
+
+  let html = renderCalendar();
+
+  // 선택된 날짜 기록
+  if (selectedDate) {
+    const dayLogs = data.logs.filter(l => l.date === selectedDate).sort((a,b) => a.date.localeCompare(b.date));
+    html += `<div class="selected-day-logs">
+      <div class="selected-day-title">${fmtDate(selectedDate)} 기록</div>`;
+    if (dayLogs.length === 0) {
+      html += `<p style="font-size:13px;color:#aaa;padding:8px 0">이 날의 기록이 없습니다.</p>`;
+    } else {
+      for (const log of dayLogs) {
+        const proj = projMap[log.projectId];
+        html += `<div class="card">
+          <div class="card-row">
+            <div style="flex:1">
+              <div class="log-badges">
+                <span class="badge badge-blue">${proj ? escHtml(proj.title) : "삭제된 프로젝트"}</span>
+                ${log.hours ? `<span style="font-size:12px;color:#aaa">${log.hours}h</span>` : ""}
+              </div>
+              <div class="log-content">${escHtml(log.content)}</div>
+            </div>
+            <button class="btn-del" onclick="deleteLog('${log.id}')">×</button>
+          </div>
+        </div>`;
+      }
+    }
+    html += `</div>`;
+  }
+
+  html += `<div class="row">
+    <span style="font-size:14px;color:#888">전체 작업 기록</span>
+    <button class="btn" onclick="toggleForm('log-form')">+ 기록 추가</button>
+  </div>
+  <div id="log-form" style="display:none">
+    <div class="form-box">
+      <div class="grid2">
+        <div class="field"><label>날짜</label><input type="date" id="lf-date" value="${selectedDate || today()}"></div>
+        <div class="field"><label>소요 시간 (h)</label><input type="number" id="lf-hours" min="0" step="0.5" placeholder="예: 2"></div>
+      </div>
+      <div class="field"><label>프로젝트</label>
+        <select id="lf-proj">
+          <option value="">프로젝트 선택</option>
+          ${data.projects.map(p => `<option value="${p.id}">${escHtml(p.title)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field"><label>작업 내용</label><textarea id="lf-content" rows="3" placeholder="오늘 한 작업을 기록하세요..."></textarea></div>
+      <div class="form-actions">
+        <button class="btn btn-primary btn-sm" onclick="addLog()">저장</button>
+        <button class="btn btn-sm" onclick="toggleForm('log-form')">취소</button>
+      </div>
+    </div>
+  </div>`;
+
+  const sorted = [...data.logs].sort((a, b) => b.date.localeCompare(a.date));
+  const byDate = sorted.reduce((acc, l) => { (acc[l.date] = acc[l.date] || []).push(l); return acc; }, {});
+
+  if (data.projects.length === 0) {
+    html += `<div class="empty">먼저 프로젝트를 등록해 주세요.</div>`;
+  } else if (Object.keys(byDate).length === 0) {
+    html += `<div class="empty">아직 기록이 없습니다.</div>`;
+  } else {
+    for (const [date, logs] of Object.entries(byDate)) {
+      html += `<div class="date-label">${fmtDate(date)}</div>`;
+      for (const log of logs) {
+        const proj = projMap[log.projectId];
+        html += `<div class="card">
+          <div class="card-row">
+            <div style="flex:1">
+              <div class="log-badges">
+                <span class="badge badge-blue">${proj ? escHtml(proj.title) : "삭제된 프로젝트"}</span>
+                ${log.hours ? `<span style="font-size:12px;color:#aaa">${log.hours}h</span>` : ""}
+              </div>
+              <div class="log-content">${escHtml(log.content)}</div>
+            </div>
+            <button class="btn-del" onclick="deleteLog('${log.id}')">×</button>
+          </div>
+        </div>`;
+      }
+    }
+  }
+  el.innerHTML = html;
+}
+
+function renderProjects() {
+  const el = document.getElementById("tab-projects");
+  let html = `<div class="row">
+    <span style="font-size:14px;color:#888">등록된 논문</span>
+    <button class="btn" onclick="toggleForm('proj-form')">+ 논문 추가</button>
+  </div>
+  <div id="proj-form" style="display:none">
+    <div class="form-box">
+      <div class="field"><label>논문 제목</label><input type="text" id="pf-title" placeholder="논문 제목 입력"></div>
+      <div class="grid2">
+        <div class="field"><label>투고 저널</label><input type="text" id="pf-journal" placeholder="예: Anesthesia & Analgesia"></div>
+        <div class="field"><label>상태</label>
+          <select id="pf-status">
+            ${["진행중","투고 준비","심사 중","수정 중","게재 확정","완료"].map(s => `<option>${s}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary btn-sm" onclick="addProject()">추가</button>
+        <button class="btn btn-sm" onclick="toggleForm('proj-form')">취소</button>
+      </div>
+    </div>
+  </div>`;
+
+  if (data.projects.length === 0) {
+    html += `<div class="empty">등록된 논문이 없습니다.</div>`;
+  } else {
+    for (let i = 0; i < data.projects.length; i++) {
+      const p = data.projects[i];
+      const logs = data.logs.filter(l => l.projectId === p.id);
+      const hrs = logs.reduce((s, l) => s + (parseFloat(l.hours) || 0), 0);
+      const color = PROJECT_COLORS[i % PROJECT_COLORS.length];
+      html += `<div class="card">
+        <div class="card-row">
+          <div style="width:4px;border-radius:4px;background:${color};align-self:stretch;margin-right:4px;flex-shrink:0"></div>
+          <div style="flex:1">
+            <div class="proj-title">${escHtml(p.title)}</div>
+            <div class="proj-meta">
+              ${p.journal ? `<span>${escHtml(p.journal)}</span>` : ""}
+              ${statusBadge(p.status)}
+              <span>기록 ${logs.length}개 · ${hrs.toFixed(1)}h</span>
+            </div>
+          </div>
+          <button class="btn-del" onclick="deleteProject('${p.id}')">×</button>
+        </div>
+      </div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function renderTimeline() {
+  const el = document.getElementById("tab-timeline");
+  let html = `<p style="font-size:14px;color:#888;margin-bottom:1rem">프로젝트별 작업 흐름</p>`;
+
+  if (data.projects.length === 0) {
+    html += `<div class="empty">등록된 프로젝트가 없습니다.</div>`;
+  } else {
+    for (const p of data.projects) {
+      const logs = [...data.logs.filter(l => l.projectId === p.id)].sort((a,b) => b.date.localeCompare(a.date));
+      html += `<div style="margin-bottom:1.5rem">
+        <p style="font-weight:500;font-size:14px;margin-bottom:8px">${escHtml(p.title)}</p>`;
+      if (logs.length === 0) {
+        html += `<p style="font-size:13px;color:#aaa;padding-left:16px">기록 없음</p>`;
+      } else {
+        html += `<div class="timeline-line">`;
+        for (const log of logs) {
+          html += `<div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">${fmtDate(log.date)}${log.hours ? ` · ${log.hours}h` : ""}</div>
+            <div style="font-size:14px;line-height:1.6">${escHtml(log.content)}</div>
+          </div>`;
+        }
+        html += `</div>`;
+      }
+      html += `</div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function toggleForm(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === "none" ? "" : "none";
+}
+
+function addLog() {
+  const date = document.getElementById("lf-date").value;
+  const projId = document.getElementById("lf-proj").value;
+  const content = document.getElementById("lf-content").value.trim();
+  const hours = document.getElementById("lf-hours").value;
+  if (!projId || !content) return alert("프로젝트와 작업 내용을 입력해 주세요.");
+  data.logs.push({ id: Date.now().toString(), date, projectId: projId, content, hours });
+  save(); render();
+}
+
+function addProject() {
+  const title = document.getElementById("pf-title").value.trim();
+  if (!title) return alert("논문 제목을 입력해 주세요.");
+  const journal = document.getElementById("pf-journal").value.trim();
+  const status = document.getElementById("pf-status").value;
+  data.projects.push({ id: Date.now().toString(), title, journal, status, createdAt: today() });
+  save(); render();
+}
+
+function deleteLog(id) {
+  if (!confirm("이 기록을 삭제할까요?")) return;
+  data.logs = data.logs.filter(l => l.id !== id);
+  save(); render();
+}
+
+function deleteProject(id) {
+  if (!confirm("이 프로젝트를 삭제할까요?\n관련 기록도 모두 삭제됩니다.")) return;
+  data.projects = data.projects.filter(p => p.id !== id);
+  data.logs = data.logs.filter(l => l.projectId !== id);
+  save(); render();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+updateMeta();
+render();
+</script>
+</body>
+</html>
